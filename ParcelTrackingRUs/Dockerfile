@@ -1,30 +1,37 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
+# Stage 1: Base image for running the app (ASP.NET runtime)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 5001
+ENV DOTNET_URLS=http://+5001
 
 
-# This stage is used to build the service project
+# Stage 2: Build image with SDK for compiling and building the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ParcelTrackingRUs/ParcelTrackingRUs.csproj", "ParcelTrackingRUs/"]
+
+# Copy the csproj and restore any dependencies (via NuGet)
+COPY ["ParcelTrackingRUs.csproj", "ParcelTrackingRUs/"]
 RUN dotnet restore "./ParcelTrackingRUs/ParcelTrackingRUs.csproj"
-COPY . .
-WORKDIR "/src/ParcelTrackingRUs"
-RUN dotnet build "./ParcelTrackingRUs.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
+# Copy the entire source code to the container
+COPY . /source
+
+# Set the working directory and build the app
+WORKDIR "/source"
+RUN dotnet build "ParcelTrackingRUs.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Stage 3: Publish the app to a folder for production
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ParcelTrackingRUs.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "ParcelTrackingRUs.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+# Stage 4: Final image with the base runtime and published app
 FROM base AS final
 WORKDIR /app
+
+# Copy the published app from the build container
 COPY --from=publish /app/publish .
+
+# Set the entry point to start the app
 ENTRYPOINT ["dotnet", "ParcelTrackingRUs.dll"]

@@ -1,23 +1,25 @@
 ﻿version: '3.1'
 services:
-    mongohost:              #This part is our : docker run -d --name mongoHost -p 27017:27017 -v /home/fhaDB/mongo:/data/db mongo:7
-        image: mongo:bionic      #Base this container on the default mongo version 7 image
-        restart: always     #Notice, now the container will always auto startup when running docker-desktop, else use: no
-        container_name: piiMongodb
-        volumes:
-         - dbdata:/data/db
-        ports:
-        - 27017:27017
-      
-    d22-server:
-        build: .        #use the Dockerfile in this folder
-        restart: always
-        container_name: d22server
-        environment:    #Let us get back to this in a few minutes
-         - "D22RestDatabaseSettings__TestENVVar=Learn the art of black docker magic"
-        ports:
-          - 5000:8081   #overwrites the dockerfile port mapping
-        depends_on:     #Start the service mongohost before this service, as it depends on it
-          - mongohost
-volumes:                # default dir on Ubuntu: /var/lib/docker/volumes
-  dbdata: 
+  # MongoDB container
+  mongohost:
+    image: mongo:7
+    container_name: mongoHost
+    restart: always
+    ports:
+      - "27017:27017"  # Expose the default MongoDB port
+    volumes:
+      - mongohost_db:/data/db  # Persist MongoDB data on the host machine
+
+  # .NET API container
+  restapi:
+    build: .  # Build from the Dockerfile in the current directory
+    container_name: restapi
+    restart: always
+    ports:
+      - "5001:5001"  # Expose port 8081 of the container as port 5000 on the host
+    depends_on:
+      - mongohost  # Ensure MongoDB container starts before the API
+
+# Volumes section for MongoDB persistence
+volumes:
+  mongohost_db:

@@ -29,6 +29,9 @@ app.UseHttpsRedirection();
 // Define API endpoints
 var locations = app.MapGroup("/api/track");
 
+app.MapGet("/", () => "Hello world"); 
+
+
 locations.MapPost("/{entityId}/location", async (string entityId, Location location, LocationService locationService) =>
 {
     location.EntityId = entityId;
