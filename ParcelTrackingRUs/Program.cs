@@ -31,6 +31,11 @@ var locations = app.MapGroup("/api/track");
 
 app.MapGet("/", () => "Hello world"); 
 
+app.MapPost("/location", async (Location l, LocationService ls)=> {
+    await ls.CreateAsync(l);
+    
+
+});
 
 locations.MapPost("/{entityId}/location", async (string entityId, Location location, LocationService locationService) =>
 {

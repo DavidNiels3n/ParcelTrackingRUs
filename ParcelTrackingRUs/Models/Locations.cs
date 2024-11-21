@@ -6,7 +6,8 @@ namespace ParcelTrackingRUs.Models
     public class Location
     {
         [BsonId]
-        public ObjectId Id { get; set; }
+        //public ObjectId Id { get; set; }
+        public int Id { get; set; }
 
         public string? EntityId { get; set; }
         public double Latitude { get; set; }
