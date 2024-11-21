@@ -16,7 +16,7 @@ services:
     container_name: restapi
     restart: always
     ports:
-      - "5001:5001"  # Expose port 8081 of the container as port 5000 on the host
+      - "5001:5001"  
     depends_on:
       - mongohost  # Ensure MongoDB container starts before the API
 

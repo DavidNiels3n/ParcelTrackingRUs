@@ -2,8 +2,9 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 5001
 ENV DOTNET_URLS=http://+5001
+EXPOSE 5001
+
 
 
 # Stage 2: Build image with SDK for compiling and building the app
